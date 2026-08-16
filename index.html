@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Open Campus Dag — KdG</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .chutes { display: grid; gap: 0.75rem; margin: 1.5rem 0; }
+
+  .chute-card {
+    position: relative; display: block; text-decoration: none; color: inherit;
+    border: 2px solid var(--line); border-radius: var(--radius); background: var(--paper);
+    padding: 1rem 1rem 1rem 4.25rem; min-height: 5.5rem;
+  }
+
+  .chute-card::before {
+    content: ""; position: absolute; left: 1rem; top: 1rem; width: 2.5rem; height: 3.4rem;
+    border: 2px solid var(--board-edge); border-radius: 2px; background: var(--surface-sunken);
+  }
+
+  .chute-card::after {
+    content: ""; position: absolute; left: 1.45rem; top: 1.5rem; width: 28px; height: 28px;
+    border-radius: 50%; border: 2px solid var(--board-edge); background: var(--board);
+    transition: transform 180ms ease;
+  }
+
+  .chute-card:hover, .chute-card:focus-visible { border-color: var(--green); }
+  .chute-card:hover::after, .chute-card:focus-visible::after { transform: translateY(14px); }
+
+  .chute-card strong {
+    display: block; text-transform: uppercase; letter-spacing: 0.05em; font-size: 1.05rem;
+  }
+
+  .chute-card span { color: var(--ink-soft); font-size: 0.9rem; }
+
+  .strip {
+    display: flex; gap: 0.5rem; align-items: center; margin: 2rem 0 0.5rem;
+    font-size: 0.8rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-soft);
+  }
+
+  .strip::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+
+  .how { margin: 0.5rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.6rem; }
+  .how li { display: flex; gap: 0.7rem; align-items: baseline; }
+  .how .token { width: 16px; height: 16px; vertical-align: 0; align-self: center; }
+</style>
+</head>
+<body>
+<main>
+  <header class="masthead">
+    <p class="eyebrow"><span data-copy="event">Open Campus Dag</span>
+      <button class="lang" type="button" id="lang">EN</button></p>
+    <h1 data-copy="title">Welkom bij KdG</h1>
+  </header>
+
+  <p class="lede" data-copy="lede">Alles voor je bezoek op één plek: ontdek de opleidingen, speel de FabLab-quiz en laat weten hoe je dag was.</p>
+
+  <nav class="chutes" aria-label="Hoofdmenu">
+    <a class="chute-card" href="departments.html">
+      <strong data-copy="c1">Ontdek de opleidingen</strong>
+      <span data-copy="c1sub">Zes studiegebieden, met campus en adres.</span>
+    </a>
+    <a class="chute-card" href="quiz.html">
+      <strong data-copy="c2">De FabLab-quiz</strong>
+      <span data-copy="c2sub">Acht vragen over wat je net zag. Topscores op het scherm.</span>
+    </a>
+    <a class="chute-card" href="survey.html">
+      <strong data-copy="c3">Hoe was het vandaag?</strong>
+      <span data-copy="c3sub">Vier vragen, één minuut, anoniem.</span>
+    </a>
+  </nav>
+
+  <p class="strip" data-copy="howtitle">Zo werkt het</p>
+  <ul class="how">
+    <li><span class="token" aria-hidden="true"></span><span data-copy="how1">Gooi bij de uitgang een token in de Pulse-zuil: top, oké of matig.</span></li>
+    <li><span class="token" aria-hidden="true"></span><span data-copy="how2">Scan de QR-code op de zuil voor de korte vragenlijst.</span></li>
+    <li><span class="token" aria-hidden="true"></span><span data-copy="how3">Jouw antwoord maakt de volgende Open Campus Dag beter.</span></li>
+  </ul>
+
+  <p class="notice" data-copy="notice">We bewaren alleen antwoorden, geen persoonsgegevens en geen cookies.</p>
+</main>
+
+<footer class="site">
+  <span data-copy="footer">Een project van Ecaterina Moraru, 3.1 Product Development, KdG Hoboken.</span>
+</footer>
+
+<script src="shared.js"></script>
+<script>
+  const COPY = {
+    nl: {
+      event: "Open Campus Dag", title: "Welkom bij KdG",
+      lede: "Alles voor je bezoek op één plek: ontdek de opleidingen, speel de FabLab-quiz en laat weten hoe je dag was.",
+      c1: "Ontdek de opleidingen", c1sub: "Zes studiegebieden, met campus en adres.",
+      c2: "De FabLab-quiz", c2sub: "Acht vragen over wat je net zag. Topscores op het scherm.",
+      c3: "Hoe was het vandaag?", c3sub: "Vier vragen, één minuut, anoniem.",
+      howtitle: "Zo werkt het",
+      how1: "Gooi bij de uitgang een token in de Pulse-zuil: top, oké of matig.",
+      how2: "Scan de QR-code op de zuil voor de korte vragenlijst.",
+      how3: "Jouw antwoord maakt de volgende Open Campus Dag beter.",
+      notice: "We bewaren alleen antwoorden, geen persoonsgegevens en geen cookies.",
+      footer: "Een project van Ecaterina Moraru, 3.1 Product Development, KdG Hoboken.",
+    },
+    en: {
+      event: "Open Campus Day", title: "Welcome to KdG",
+      lede: "Everything for your visit in one place: explore the programmes, play the FabLab quiz and tell us how your day was.",
+      c1: "Explore the programmes", c1sub: "Six fields of study, with campus and address.",
+      c2: "The FabLab quiz", c2sub: "Eight questions about what you just saw. Top scores on the screen.",
+      c3: "How was today?", c3sub: "Four questions, one minute, anonymous.",
+      howtitle: "How it works",
+      how1: "Drop a token in the Pulse tower at the exit: great, ok or meh.",
+      how2: "Scan the QR code on the tower for the short survey.",
+      how3: "Your answer makes the next Open Campus Day better.",
+      notice: "We keep answers only, no personal data and no cookies.",
+      footer: "A project by Ecaterina Moraru, 3.1 Product Development, KdG Hoboken.",
+    },
+  };
+
+  document.getElementById("lang").addEventListener("click", () => {
+    PULSE.toggleLanguage();
+    PULSE.applyCopy(COPY);
+  });
+
+  PULSE.applyCopy(COPY);
+  PULSE.flushQueue();
+</script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>FabLab-quiz — Open Campus Dag</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .progress { display: flex; gap: 0.4rem; margin: 1.2rem 0; }
+
+  .progress .token {
+    width: 18px; height: 18px; opacity: 0.35; transition: opacity 160ms ease, transform 160ms ease;
+  }
+
+  .progress .token.dropped { opacity: 1; transform: translateY(2px); }
+  .progress .token.correct { background: var(--green); border-color: var(--green-deep); }
+
+  .card {
+    border: 2px solid var(--line); border-radius: var(--radius); background: var(--paper);
+    padding: 1.2rem;
+  }
+
+  .card h2 { font-size: 1.15rem; margin: 0 0 1rem; }
+
+  .answers { display: grid; gap: 0.5rem; }
+
+  .answers button {
+    text-align: left; font: inherit; padding: 0.75rem 0.9rem; min-height: 52px;
+    border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper-warm);
+    cursor: pointer;
+  }
+
+  .answers button:hover { border-color: var(--green); }
+  .answers button.right { border-color: var(--green-deep); background: #e8f5f1; }
+  .answers button.wrong { border-color: #a3121a; background: #fbeceb; }
+  .answers button[disabled] { cursor: default; }
+
+  .feedback { min-height: 1.5rem; font-size: 0.9rem; color: var(--ink-soft); margin: 0.8rem 0 0; }
+
+  .result { text-align: center; padding: 1rem 0; }
+  .result .score { font-family: var(--mono); font-size: clamp(3rem, 18vw, 4.5rem); font-weight: 700; }
+  .result .score small { font-size: 0.35em; color: var(--ink-soft); }
+
+  .alias { display: grid; gap: 0.6rem; margin: 1.2rem 0; }
+  .alias input {
+    font: inherit; padding: 0.7rem; border: 1px solid var(--line); border-radius: var(--radius);
+    min-height: 48px; text-align: center; font-family: var(--mono); text-transform: uppercase;
+  }
+
+  .start, .result, .question { display: none; }
+  body[data-stage="start"] .start { display: block; }
+  body[data-stage="question"] .question { display: block; }
+  body[data-stage="result"] .result { display: block; }
+</style>
+</head>
+<body data-stage="start">
+<main>
+  <header class="masthead">
+    <p class="eyebrow"><span data-copy="event">Open Campus Dag, FabLab</span>
+      <button class="lang" type="button" id="lang">EN</button></p>
+    <h1 data-copy="title">De FabLab-quiz</h1>
+  </header>
+
+  <section class="start">
+    <p class="lede" data-copy="lede">Acht vragen over wat je net zag in het FabLab. Iedereen speelt tegelijk, de topscores verschijnen op het scherm in de zaal.</p>
+    <button class="button" id="start" data-copy="start">Start de quiz</button>
+    <p class="notice" data-copy="startnotice">Geen echte naam nodig, je kiest straks zelf een spelersnaam.</p>
+  </section>
+
+  <section class="question" aria-live="polite">
+    <div class="progress" id="progress" aria-hidden="true"></div>
+    <div class="card">
+      <h2 id="qtext"></h2>
+      <div class="answers" id="answers"></div>
+      <p class="feedback" id="feedback"></p>
+    </div>
+  </section>
+
+  <section class="result" aria-live="polite">
+    <p class="score"><span id="score">0</span><small id="total">/8</small></p>
+    <p id="resultline" class="lede"></p>
+    <form class="alias" id="aliasform">
+      <input id="alias" maxlength="16" autocomplete="off" spellcheck="false" placeholder="SPELERSNAAM">
+      <button class="button" type="submit" data-copy="submitscore">Zet me op het scorebord</button>
+    </form>
+    <a class="button quiet" href="survey.html" data-copy="tosurvey">Nog 1 minuut: hoe was je dag?</a>
+    <p class="notice"><a href="leaderboard.html" data-copy="toboard">Bekijk het scorebord</a></p>
+  </section>
+</main>
+
+<script src="shared.js"></script>
+<script>
+  // TODO(Katia/Farah): confirm the eight questions against the real FabLab tour route.
+  const QUESTIONS = [
+    {
+      nl: { q: "Wat doet een lasersnijder precies?", a: ["Materiaal snijden met gebundeld licht", "Materiaal smelten met hete lucht", "Materiaal zagen met een heel dun blad", "Materiaal persen onder hoge druk"] },
+      en: { q: "What does a laser cutter actually do?", a: ["Cut material with focused light", "Melt material with hot air", "Saw material with a very thin blade", "Press material at high pressure"] },
+      correct: 0,
+    },
+    {
+      nl: { q: "Welk materiaal mag NOOIT in de lasersnijder?", a: ["PVC, de dampen zijn giftig", "Karton", "Multiplex", "Plexiglas (acrylaat)"] },
+      en: { q: "Which material must NEVER go in the laser cutter?", a: ["PVC, the fumes are toxic", "Cardboard", "Plywood", "Acrylic"] },
+      correct: 0,
+    },
+    {
+      nl: { q: "Hoe bouwt een 3D-printer een object op?", a: ["Laag voor laag, met gesmolten kunststof", "Door te frezen uit een blok", "Door twee helften te lijmen", "Door poeder samen te persen"] },
+      en: { q: "How does a 3D printer build an object?", a: ["Layer by layer, with molten plastic", "By milling it from a block", "By gluing two halves", "By pressing powder together"] },
+      correct: 0,
+    },
+    {
+      nl: { q: "Wat is de 'kerf' bij lasersnijden?", a: ["De breedte die de laserstraal wegbrandt", "De naam van de veiligheidsbril", "Het restmateriaal op de rand", "De snelheid van de laserkop"] },
+      en: { q: "What is the 'kerf' in laser cutting?", a: ["The width the laser beam burns away", "The name of the safety goggles", "The leftover material at the edge", "The speed of the laser head"] },
+      correct: 0,
+    },
+    {
+      nl: { q: "Waarvoor gebruik je de vinylsnijder?", a: ["Stickers en folie snijden", "Hout graveren", "Metaal buigen", "Textiel bedrukken met inkt"] },
+      en: { q: "What is the vinyl cutter for?", a: ["Cutting stickers and foil", "Engraving wood", "Bending metal", "Printing ink on textile"] },
+      correct: 0,
+    },
+    {
+      nl: { q: "Wat draag je altijd als een machine draait?", a: ["Een veiligheidsbril", "Handschoenen van wol", "Een koptelefoon met muziek", "Een labojas met lange mouwen los"] },
+      en: { q: "What do you always wear while a machine runs?", a: ["Safety goggles", "Wool gloves", "Headphones with music", "A lab coat with loose sleeves"] },
+      correct: 0,
+    },
+    {
+      nl: { q: "De Pulse-zuil bij de uitgang, waar je token in ging, is gemaakt van…", a: ["Karton, uit een lasersnijbaar ontwerp", "Gegoten beton", "3D-geprint nylon", "Gelast staal"] },
+      en: { q: "The Pulse tower at the exit, where your token went, is made of…", a: ["Cardboard, from a laser-cuttable design", "Cast concrete", "3D-printed nylon", "Welded steel"] },
+      correct: 0,
+    },
+    {
+      nl: { q: "Wat betekent 'open source' in de makerwereld?", a: ["Ontwerpen vrij delen en aanpassen", "Alleen met open ramen werken", "Gratis materiaal voor iedereen", "Een machine zonder handleiding"] },
+      en: { q: "What does 'open source' mean in the maker world?", a: ["Sharing and adapting designs freely", "Working with the windows open", "Free material for everyone", "A machine without a manual"] },
+      correct: 0,
+    },
+  ];
+
+  const COPY = {
+    nl: {
+      event: "Open Campus Dag, FabLab", title: "De FabLab-quiz",
+      lede: "Acht vragen over wat je net zag in het FabLab. Iedereen speelt tegelijk, de topscores verschijnen op het scherm in de zaal.",
+      start: "Start de quiz", startnotice: "Geen echte naam nodig, je kiest straks zelf een spelersnaam.",
+      submitscore: "Zet me op het scorebord", tosurvey: "Nog 1 minuut: hoe was je dag?",
+      toboard: "Bekijk het scorebord",
+      right: "Juist!", wrong: "Mis, het juiste antwoord is aangeduid.",
+      resultgood: "Sterk! Jij hebt goed opgelet in het FabLab.",
+      resultok: "Netjes. Volgende ronde pak je ze allemaal.",
+      sent: "Je staat op het scorebord.",
+      aliasplaceholder: "SPELERSNAAM",
+    },
+    en: {
+      event: "Open Campus Day, FabLab", title: "The FabLab quiz",
+      lede: "Eight questions about what you just saw in the FabLab. Everyone plays at once, top scores appear on the screen in the room.",
+      start: "Start the quiz", startnotice: "No real name needed, you pick a player name at the end.",
+      submitscore: "Put me on the scoreboard", tosurvey: "One more minute: how was your day?",
+      toboard: "See the scoreboard",
+      right: "Correct!", wrong: "Missed, the right answer is marked.",
+      resultgood: "Strong! You paid attention in the FabLab.",
+      resultok: "Not bad. Next round you get them all.",
+      sent: "You are on the scoreboard.",
+      aliasplaceholder: "PLAYER NAME",
+    },
+  };
+
+  let index = 0;
+  let score = 0;
+  let startedAt = null;
+  let posted = false;
+  let order = [];
+
+  const progress = document.getElementById("progress");
+  const qtext = document.getElementById("qtext");
+  const answersBox = document.getElementById("answers");
+  const feedback = document.getElementById("feedback");
+
+  function shuffle(list) {
+    return list
+      .map((value) => [Math.random(), value])
+      .sort((a, b) => a[0] - b[0])
+      .map(([, value]) => value);
+  }
+
+  function renderProgress() {
+    progress.innerHTML = QUESTIONS
+      .map((question, i) => {
+        const state = i < index ? (order[i].wasCorrect ? "dropped correct" : "dropped") : "";
+        return `<span class="token ${state}"></span>`;
+      })
+      .join("");
+  }
+
+  function showQuestion() {
+    const entry = order[index];
+    const copy = COPY[PULSE.language];
+    const localized = entry.question[PULSE.language];
+    qtext.textContent = `${index + 1}. ${localized.q}`;
+    feedback.textContent = "";
+    answersBox.innerHTML = "";
+    entry.answerOrder.forEach((originalIndex) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = localized.a[originalIndex];
+      button.addEventListener("click", () => answer(button, originalIndex));
+      answersBox.append(button);
+    });
+    renderProgress();
+  }
+
+  function answer(button, originalIndex) {
+    const entry = order[index];
+    const copy = COPY[PULSE.language];
+    const isCorrect = originalIndex === entry.question.correct;
+    entry.wasCorrect = isCorrect;
+    if (isCorrect) score += 1;
+    [...answersBox.children].forEach((node, position) => {
+      node.disabled = true;
+      if (entry.answerOrder[position] === entry.question.correct) node.classList.add("right");
+    });
+    if (!isCorrect) button.classList.add("wrong");
+    feedback.textContent = isCorrect ? copy.right : copy.wrong;
+    setTimeout(() => {
+      index += 1;
+      if (index < order.length) {
+        showQuestion();
+      } else {
+        finish();
+      }
+    }, 900);
+  }
+
+  function finish() {
+    const copy = COPY[PULSE.language];
+    document.body.dataset.stage = "result";
+    document.getElementById("score").textContent = String(score);
+    document.getElementById("total").textContent = `/${QUESTIONS.length}`;
+    document.getElementById("resultline").textContent = score >= 6 ? copy.resultgood : copy.resultok;
+  }
+
+  document.getElementById("start").addEventListener("click", () => {
+    index = 0;
+    score = 0;
+    posted = false;
+    startedAt = Date.now();
+    order = shuffle(QUESTIONS).map((question) => ({
+      question,
+      answerOrder: shuffle(question[PULSE.language].a.map((_, i) => i)),
+      wasCorrect: false,
+    }));
+    document.body.dataset.stage = "question";
+    showQuestion();
+  });
+
+  document.getElementById("aliasform").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (posted) return;
+    const alias = document.getElementById("alias").value.trim().toUpperCase() || "ANONIEM";
+    posted = true;
+    await PULSE.sendOrQueue({
+      type: "quiz",
+      submittedAt: new Date().toISOString(),
+      alias,
+      score,
+      total: QUESTIONS.length,
+      durationSec: Math.round((Date.now() - startedAt) / 1000),
+      language: PULSE.language,
+    });
+    document.getElementById("aliasform").innerHTML =
+      `<p class="notice">${COPY[PULSE.language].sent}</p>`;
+  });
+
+  function render() {
+    PULSE.applyCopy(COPY);
+    document.getElementById("alias").placeholder = COPY[PULSE.language].aliasplaceholder;
+    if (document.body.dataset.stage === "question") showQuestion();
+  }
+
+  document.getElementById("lang").addEventListener("click", () => {
+    PULSE.toggleLanguage();
+    render();
+  });
+
+  render();
+  PULSE.flushQueue();
+</script>
+</body>
+</html>

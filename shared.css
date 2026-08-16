@@ -1,0 +1,84 @@
+:root {
+  --green: #05a685;
+  --green-deep: #00594f;
+  --ink: #1d1d1b;
+  --ink-soft: #55524b;
+  --paper: #ffffff;
+  --paper-warm: #faf8f3;
+  --surface-sunken: #f0ece2;
+  --board: #e5dac4;
+  --board-edge: #c9bb9d;
+  --line: #d8d2c4;
+  --focus: #0b63c5;
+  --radius: 4px;
+  --step: clamp(20px, 5vw, 28px);
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper-warm);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
+}
+
+main { max-width: 34rem; margin: 0 auto; padding: var(--step) var(--step) 4rem; }
+
+.masthead {
+  border-top: 8px solid var(--green-deep);
+  border-bottom: 3px solid var(--green-deep);
+  padding: 0.6rem 0 0.75rem;
+}
+
+.eyebrow {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
+  font-size: 0.8rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-soft);
+  margin: 0;
+}
+
+.lang {
+  background: none; border: 1px solid var(--line); border-radius: var(--radius);
+  color: var(--ink-soft); font: inherit; font-size: 0.75rem; letter-spacing: 0.09em;
+  padding: 0.25rem 0.5rem; cursor: pointer; min-height: 32px;
+}
+
+h1 {
+  font-size: clamp(2rem, 9vw, 2.75rem); font-weight: 800; letter-spacing: -0.01em;
+  text-transform: uppercase; margin: 0.6rem 0 0.3rem;
+}
+
+.lede { margin: 0 0 1.5rem; color: var(--ink-soft); font-size: 0.95rem; }
+
+.token {
+  display: inline-block; width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid var(--board-edge); background: var(--board);
+  vertical-align: -4px; flex: none;
+}
+
+a { color: var(--green-deep); }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.button {
+  display: flex; align-items: center; justify-content: center; width: 100%; min-height: 52px;
+  border: 0; border-radius: var(--radius); background: var(--green-deep); color: #fff;
+  font: inherit; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  cursor: pointer; text-decoration: none;
+}
+
+.button.quiet { background: none; border: 2px solid var(--green-deep); color: var(--green-deep); }
+
+.notice { color: var(--ink-soft); font-size: 0.8rem; margin: 1rem 0 0; }
+
+footer.site {
+  max-width: 34rem; margin: 0 auto; padding: 0 var(--step) 2rem;
+  color: var(--ink-soft); font-size: 0.8rem;
+  border-top: 1px solid var(--line); padding-top: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

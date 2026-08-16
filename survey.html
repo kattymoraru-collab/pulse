@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Open Campus Dag, korte vragenlijst</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  fieldset { border: 0; margin: 0 0 var(--step); padding: 0; }
+  legend { padding: 0; font-weight: 700; font-size: 1.05rem; }
+  .hint { color: var(--ink-soft); font-size: 0.85rem; margin: 0.15rem 0 0.7rem; }
+
+  .chutes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+  .chute { position: relative; }
+  .chute input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+
+  .chute span {
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 0.6rem;
+    min-height: 8.5rem; padding: 0.7rem 0.4rem 0.6rem; border: 2px solid var(--line); border-radius: var(--radius);
+    background: var(--surface-sunken); text-transform: uppercase; letter-spacing: 0.06em;
+    font-size: 0.85rem; font-weight: 700;
+  }
+
+  .chute span::before {
+    content: ""; width: 34px; height: 34px; border-radius: 50%;
+    border: 2px solid var(--board-edge); background: var(--board);
+    transition: transform 160ms ease;
+  }
+
+  .chute span::after {
+    content: ""; width: 60%; height: 22px; margin-top: auto; border-radius: 1px;
+    background: repeating-linear-gradient(0deg,
+      var(--board) 0, var(--board) 3px, var(--board-edge) 3px, var(--board-edge) 4px);
+    opacity: 0; transform: scaleY(0); transform-origin: bottom;
+    transition: opacity 160ms ease, transform 160ms ease;
+  }
+
+  .chute input:checked + span { border-color: var(--green-deep); background: var(--paper); }
+  .chute input:checked + span::before { transform: translateY(6px); border-color: var(--green-deep); }
+  .chute input:checked + span::after { opacity: 1; transform: scaleY(1); }
+  .chute input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  .options { display: grid; gap: 0.4rem; }
+
+  .option { display: flex; align-items: center; gap: 0.7rem; min-height: 48px; padding: 0.55rem 0.75rem;
+    border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; background: var(--paper); }
+
+  .option:has(input:checked) { border-color: var(--green-deep); box-shadow: inset 0 0 0 1px var(--green-deep); }
+  .option:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .option input { accent-color: var(--green-deep); width: 20px; height: 20px; margin: 0; }
+
+  select, textarea {
+    width: 100%; font: inherit; color: var(--ink); background: var(--paper);
+    border: 1px solid var(--line); border-radius: var(--radius); padding: 0.7rem; min-height: 48px;
+  }
+
+  select:focus-visible, textarea:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
+  textarea { resize: vertical; }
+
+  .count { color: var(--ink-soft); font-size: 0.8rem; text-align: right; margin: 0.25rem 0 0; }
+
+  button.send { width: 100%; min-height: 52px; border: 0; border-radius: var(--radius);
+    background: var(--green-deep); color: #fff; font: inherit; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; }
+  button.send[disabled] { opacity: 0.55; cursor: progress; }
+
+  .done { display: none; padding: var(--step) 0; }
+  .done h2 { text-transform: uppercase; font-size: 1.5rem; margin: 0 0 0.5rem; }
+  body.sent form { display: none; }
+  body.sent .done { display: block; }
+
+  .error { color: #a3121a; font-size: 0.9rem; margin: 0.75rem 0 0; }
+</style>
+</head>
+<body>
+<main>
+  <header class="masthead">
+    <p class="eyebrow"><span data-copy="event">Open Campus Dag, Hoboken</span>
+      <button class="lang" type="button" id="lang">EN</button></p>
+    <h1 data-copy="title">Hoe was het vandaag?</h1>
+  </header>
+
+  <p class="lede" data-copy="lede">Vier vragen, ongeveer een minuut. Anoniem, we vragen geen naam of e-mail.</p>
+
+  <form id="survey" novalidate>
+    <fieldset>
+      <legend data-copy="q1">1. Je algemene indruk</legend>
+      <p class="hint" data-copy="q1hint">Dezelfde drie antwoorden als op de zuil.</p>
+      <div class="chutes">
+        <label class="chute"><input type="radio" name="rating" value="great" required>
+          <span data-copy="great">Top</span></label>
+        <label class="chute"><input type="radio" name="rating" value="ok">
+          <span data-copy="ok">Oké</span></label>
+        <label class="chute"><input type="radio" name="rating" value="meh">
+          <span data-copy="meh">Matig</span></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend data-copy="q2">2. Voor welke opleiding kwam je?</legend>
+      <select name="programme" id="programme" required></select>
+    </fieldset>
+
+    <fieldset>
+      <legend data-copy="q3">3. Wat hielp je het meest?</legend>
+      <div class="options" id="useful"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend data-copy="q4">4. Wat zou je veranderen?</legend>
+      <p class="hint" data-copy="q4hint">Optioneel, één zin is genoeg.</p>
+      <textarea name="comment" rows="3" maxlength="300" id="comment"></textarea>
+      <p class="count"><span id="count">0</span>/300</p>
+    </fieldset>
+
+    <button class="send" type="submit" id="send" data-copy="send">Versturen</button>
+    <p class="error" id="error" hidden></p>
+    <p class="notice" data-copy="notice">We bewaren alleen je antwoorden, geen persoonsgegevens en geen cookies.</p>
+  </form>
+
+  <section class="done" id="done" aria-live="polite">
+    <h2 data-copy="thanks">Bedankt</h2>
+    <p data-copy="thanksbody">Je antwoord telt mee voor de volgende Open Campus Dag.</p>
+    <p><a href="index.html" data-copy="back">Terug naar het overzicht</a></p>
+  </section>
+</main>
+
+<script src="shared.js"></script>
+<script>
+  // TODO(Farah): confirm this programme list before printing the header QR.
+  const PROGRAMMES = [
+    "Autotechnologie", "Bouw", "Chemie", "Biochemie", "Elektromechanica",
+    "Multimedia en Creatieve Technologie", "Ontwerp- en productietechnologie",
+    "Iets anders", "Nog niet beslist",
+  ];
+
+  const USEFUL = {
+    nl: ["De infostands", "De rondleiding of demo's", "Praten met studenten", "Praten met docenten", "De sfeer op de campus"],
+    en: ["The information stands", "The tour or demos", "Talking to students", "Talking to teachers", "The atmosphere on campus"],
+  };
+
+  const COPY = {
+    nl: {
+      event: "Open Campus Dag, Hoboken", title: "Hoe was het vandaag?",
+      lede: "Vier vragen, ongeveer een minuut. Anoniem, we vragen geen naam of e-mail.",
+      q1: "1. Je algemene indruk", q1hint: "Dezelfde drie antwoorden als op de zuil.",
+      great: "Top", ok: "Oké", meh: "Matig",
+      q2: "2. Voor welke opleiding kwam je?", q3: "3. Wat hielp je het meest?",
+      q4: "4. Wat zou je veranderen?", q4hint: "Optioneel, één zin is genoeg.",
+      send: "Versturen", notice: "We bewaren alleen je antwoorden, geen persoonsgegevens en geen cookies.",
+      thanks: "Bedankt", thanksbody: "Je antwoord telt mee voor de volgende Open Campus Dag.",
+      back: "Terug naar het overzicht",
+      choose: "Kies een opleiding", failed: "Versturen lukte niet. Probeer opnieuw.",
+    },
+    en: {
+      event: "Open Campus Day, Hoboken", title: "How was today?",
+      lede: "Four questions, about a minute. Anonymous, we ask for no name or email.",
+      q1: "1. Your overall impression", q1hint: "The same three answers as on the tower.",
+      great: "Great", ok: "OK", meh: "Meh",
+      q2: "2. Which programme did you come for?", q3: "3. What helped you most?",
+      q4: "4. What would you change?", q4hint: "Optional, one sentence is enough.",
+      send: "Send", notice: "We keep your answers only, no personal data and no cookies.",
+      thanks: "Thank you", thanksbody: "Your answer counts towards the next Open Campus Day.",
+      back: "Back to the overview",
+      choose: "Choose a programme", failed: "Sending failed. Try again.",
+    },
+  };
+
+  const programmeField = document.getElementById("programme");
+  const usefulField = document.getElementById("useful");
+  const comment = document.getElementById("comment");
+  const counter = document.getElementById("count");
+  const errorLine = document.getElementById("error");
+
+  function render() {
+    const copy = COPY[PULSE.language];
+    PULSE.applyCopy(COPY);
+
+    programmeField.innerHTML = "";
+    const placeholder = new Option(copy.choose, "");
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    programmeField.append(placeholder, ...PROGRAMMES.map((name) => new Option(name, name)));
+
+    usefulField.innerHTML = "";
+    USEFUL[PULSE.language].forEach((label, index) => {
+      const wrapper = document.createElement("label");
+      wrapper.className = "option";
+      wrapper.innerHTML = `<input type="radio" name="useful" value="${index}"><span>${label}</span>`;
+      usefulField.append(wrapper);
+    });
+  }
+
+  document.getElementById("lang").addEventListener("click", () => {
+    PULSE.toggleLanguage();
+    render();
+  });
+
+  comment.addEventListener("input", () => {
+    counter.textContent = String(comment.value.length);
+  });
+
+  document.getElementById("survey").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.target;
+    if (!form.reportValidity()) return;
+
+    const data = new FormData(form);
+    const usefulIndex = data.get("useful");
+    const payload = {
+      submittedAt: new Date().toISOString(),
+      rating: data.get("rating"),
+      programme: data.get("programme"),
+      useful: usefulIndex === null ? "" : USEFUL.en[Number(usefulIndex)],
+      comment: (data.get("comment") || "").toString().trim(),
+      language: PULSE.language,
+    };
+
+    const send = document.getElementById("send");
+    send.disabled = true;
+    errorLine.hidden = true;
+    await PULSE.sendOrQueue(payload);
+    document.body.classList.add("sent");
+    send.disabled = false;
+  });
+
+  render();
+  PULSE.flushQueue();
+</script>
+</body>
+</html>

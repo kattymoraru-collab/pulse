@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Opleidingen — Open Campus Dag</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .chips {
+    display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1rem 0 1.5rem; padding: 0; list-style: none;
+  }
+
+  .chips a {
+    display: inline-block; padding: 0.35rem 0.7rem; border: 1px solid var(--line);
+    border-radius: 999px; text-decoration: none; color: var(--ink-soft); font-size: 0.8rem;
+    letter-spacing: 0.04em; text-transform: uppercase; background: var(--paper);
+  }
+
+  .chips a:hover { border-color: var(--green); color: var(--green-deep); }
+
+  .area {
+    border: 2px solid var(--line); border-radius: var(--radius); background: var(--paper);
+    padding: 1.1rem 1.2rem; margin: 0 0 1rem; scroll-margin-top: 1rem;
+  }
+
+  .area h2 {
+    display: flex; align-items: center; gap: 0.6rem;
+    font-size: 1.2rem; text-transform: uppercase; letter-spacing: 0.03em; margin: 0 0 0.35rem;
+  }
+
+  .campus { color: var(--ink-soft); font-size: 0.88rem; margin: 0 0 0.7rem; }
+  .campus strong { color: var(--ink); font-weight: 700; }
+
+  .area ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.3rem; }
+  .area li { display: flex; gap: 0.55rem; align-items: center; font-size: 0.95rem; }
+  .area .token { width: 13px; height: 13px; }
+
+  .walkin {
+    margin: 1.5rem 0 0; padding: 1rem 1.2rem; border-left: 4px solid var(--green);
+    background: var(--paper); font-size: 0.92rem;
+  }
+</style>
+</head>
+<body>
+<main>
+  <header class="masthead">
+    <p class="eyebrow"><span data-copy="event">Open Campus Dag</span>
+      <button class="lang" type="button" id="lang">EN</button></p>
+    <h1 data-copy="title">Opleidingen</h1>
+  </header>
+
+  <p class="lede" data-copy="lede">Zes studiegebieden op de KdG-campussen in Antwerpen. Volg je een rondleiding, dan vind je hier terug wat je zag. Op eigen houtje? Kies een gebied en loop gewoon binnen.</p>
+
+  <ul class="chips" id="chips"></ul>
+  <div id="areas"></div>
+
+  <p class="walkin" data-copy="walkin">Geen rondleiding nodig: op elke campus staat vandaag een infopunt bij de ingang. Binnenlopen mag altijd.</p>
+
+  <p class="notice"><a href="index.html" data-copy="back">Terug naar het overzicht</a></p>
+</main>
+
+<footer class="site">
+  <span data-copy="confirm">Opleidingsaanbod onder voorbehoud, controleer kdg.be voor het volledige en actuele aanbod.</span>
+</footer>
+
+<script src="shared.js"></script>
+<script>
+  // TODO(Farah): confirm the programme list per area before the event edition.
+  const AREAS = [
+    {
+      id: "techniek",
+      campus: "Campus Hoboken", address: "Salesianenlaan 90, 2660 Hoboken",
+      nl: { name: "Wetenschap en techniek", blurb: "Labo's, werkplaatsen en het FabLab. Hier staat ook de Pulse-zuil." },
+      en: { name: "Science and technology", blurb: "Labs, workshops and the FabLab. The Pulse tower lives here too." },
+      programmes: ["Autotechnologie", "Bouw", "Chemie", "Biochemie", "Elektromechanica", "Multimedia en Creatieve Technologie", "Ontwerp- en productietechnologie"],
+    },
+    {
+      id: "business",
+      campus: "Campus Groenplaats", address: "Nationalestraat 5, 2000 Antwerpen",
+      nl: { name: "Business en IT", blurb: "Ondernemen, managen en bouwen aan software, midden in de stad." },
+      en: { name: "Business and IT", blurb: "Entrepreneurship, management and software, in the middle of the city." },
+      programmes: ["Bedrijfsmanagement", "Toegepaste Informatica", "International Business Management"],
+    },
+    {
+      id: "gezondheid",
+      campus: "Campus Pothoek", address: "Pothoekstraat 125, 2060 Antwerpen",
+      nl: { name: "Gezondheidszorg", blurb: "Oefen veilig in het simulatieziekenhuis voor je bij echte mensen staat." },
+      en: { name: "Health care", blurb: "Practise safely in the simulation hospital before you meet real patients." },
+      programmes: ["Verpleegkunde", "Vroedkunde", "Biomedische Laboratoriumtechnologie"],
+    },
+    {
+      id: "onderwijs",
+      campus: "Campus Zuid", address: "Brusselstraat 45, 2018 Antwerpen",
+      nl: { name: "Onderwijs", blurb: "Voor wie later zelf voor de klas wil staan, van kleuter tot secundair." },
+      en: { name: "Education", blurb: "For future teachers, from pre-school to secondary." },
+      programmes: ["Educatieve bachelor Kleuteronderwijs", "Educatieve bachelor Lager Onderwijs", "Educatieve bachelor Secundair Onderwijs"],
+    },
+    {
+      id: "sociaal",
+      campus: "Campus Zuid", address: "Brusselstraat 45, 2018 Antwerpen",
+      nl: { name: "Sociaal werk en begeleiding", blurb: "Werken met mensen, van jeugdhulp tot samenlevingsopbouw." },
+      en: { name: "Social work and guidance", blurb: "Working with people, from youth care to community building." },
+      programmes: ["Sociaal Werk", "Orthopedagogie"],
+    },
+    {
+      id: "kunst",
+      campus: "Campus Sint Lucas Antwerpen", address: "Van Schoonbekestraat 143, 2018 Antwerpen",
+      nl: { name: "Kunst en creativiteit", blurb: "Het atelierhuis van Sint Lucas Antwerpen, met veel licht en veel ruimte." },
+      en: { name: "Art and creativity", blurb: "The studio house of Sint Lucas Antwerpen, full of light and space." },
+      programmes: ["Beeldende Kunsten", "Audiovisuele Kunsten"],
+    },
+  ];
+
+  const COPY = {
+    nl: {
+      event: "Open Campus Dag", title: "Opleidingen",
+      lede: "Zes studiegebieden op de KdG-campussen in Antwerpen. Volg je een rondleiding, dan vind je hier terug wat je zag. Op eigen houtje? Kies een gebied en loop gewoon binnen.",
+      walkin: "Geen rondleiding nodig: op elke campus staat vandaag een infopunt bij de ingang. Binnenlopen mag altijd.",
+      back: "Terug naar het overzicht",
+      confirm: "Opleidingsaanbod onder voorbehoud, controleer kdg.be voor het volledige en actuele aanbod.",
+    },
+    en: {
+      event: "Open Campus Day", title: "Programmes",
+      lede: "Six fields of study across the KdG campuses in Antwerp. On a guided tour, this is where you look up what you saw. Exploring on your own? Pick a field and walk right in.",
+      walkin: "No tour needed: every campus has an info point at the entrance today. Walking in is always fine.",
+      back: "Back to the overview",
+      confirm: "Programme list subject to change, check kdg.be for the full and current offer.",
+    },
+  };
+
+  function render() {
+    const lang = PULSE.language;
+    document.getElementById("chips").innerHTML = AREAS
+      .map((area) => `<li><a href="#${area.id}">${area[lang].name}</a></li>`)
+      .join("");
+    document.getElementById("areas").innerHTML = AREAS
+      .map((area) => `
+        <section class="area" id="${area.id}">
+          <h2><span class="token" aria-hidden="true"></span>${area[lang].name}</h2>
+          <p class="campus"><strong>${area.campus}</strong> · ${area.address}</p>
+          <p class="campus">${area[lang].blurb}</p>
+          <ul>${area.programmes.map((name) => `<li><span class="token" aria-hidden="true"></span>${name}</li>`).join("")}</ul>
+        </section>`)
+      .join("");
+    PULSE.applyCopy(COPY);
+  }
+
+  document.getElementById("lang").addEventListener("click", () => {
+    PULSE.toggleLanguage();
+    render();
+  });
+
+  render();
+</script>
+</body>
+</html>
