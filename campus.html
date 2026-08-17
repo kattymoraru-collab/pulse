@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Campuskaart — KdG Hoboken</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .progress { display: flex; align-items: center; gap: 0.6rem; margin: 1.25rem 0 0.75rem;
+    font-size: 0.8rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-soft); }
+  .progress .token { width: 16px; height: 16px; }
+  .progress .token.filled { background: var(--green-deep); border-color: var(--green-deep); }
+
+  .sheet { border: 2px solid var(--board-edge); border-radius: var(--radius);
+    background: var(--surface-sunken); padding: 0.9rem; }
+  .sheet-label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em;
+    color: var(--ink-soft); text-transform: uppercase; margin: 0 0 0.75rem; }
+
+  .map { display: grid; gap: 0.6rem; grid-template-columns: 1fr 1fr;
+    grid-template-areas: "b d" "street street" "a a"; }
+
+  .block { position: relative; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 0.25rem; min-height: 7rem; padding: 0.9rem 0.5rem;
+    border: 2px solid var(--board-edge); border-radius: var(--radius); background: var(--board);
+    font: inherit; color: inherit; cursor: pointer; }
+  .block::before { content: ""; position: absolute; inset: 5px; border: 1px dashed var(--board-edge);
+    border-radius: 2px; pointer-events: none; }
+  .block strong { font-size: 2rem; font-weight: 800; line-height: 1; }
+  .block span { font-size: 0.8rem; color: var(--ink-soft); }
+  .block[data-building="B"] { grid-area: b; }
+  .block[data-building="D"] { grid-area: d; }
+  .block[data-building="A"] { grid-area: a; min-height: 6rem; }
+  .block[aria-pressed="true"] { border-color: var(--green-deep); background: var(--paper); }
+  .block .stamp { display: none; position: absolute; top: 0.5rem; right: 0.55rem;
+    width: 22px; height: 22px; border-radius: 50%; background: var(--green-deep);
+    color: #fff; font-size: 0.8rem; line-height: 22px; text-align: center; }
+  .block[aria-pressed="true"] .stamp { display: block; }
+  .block.selected { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  .street { grid-area: street; display: flex; flex-direction: column; align-items: center;
+    gap: 0.15rem; padding: 0.4rem 0; }
+  .street .lane { width: 100%; border-top: 2px dashed var(--board-edge); }
+  .street .name { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ink-soft); }
+
+  .rater { border: 2px solid var(--line); border-radius: var(--radius); background: var(--paper);
+    padding: 1rem; margin-top: 1rem; }
+  .rater[hidden] { display: none; }
+  .rater h2 { margin: 0 0 0.75rem; font-size: 1.05rem; text-transform: uppercase;
+    letter-spacing: 0.05em; }
+  .rates { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+  .rate { display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    min-height: 5.5rem; padding: 0.7rem 0.4rem; border: 2px solid var(--line);
+    border-radius: var(--radius); background: var(--surface-sunken); font: inherit;
+    font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em;
+    cursor: pointer; }
+  .rate .token { transition: transform 160ms ease; }
+  .rate:hover .token, .rate:focus-visible .token { transform: translateY(6px); }
+  .rated { color: var(--ink-soft); font-size: 0.9rem; margin: 0; }
+
+  .done { border: 2px solid var(--green-deep); border-radius: var(--radius);
+    background: var(--paper); padding: 1rem; margin-top: 1rem; }
+  .done[hidden] { display: none; }
+  .done h2 { margin: 0 0 0.5rem; font-size: 1.2rem; text-transform: uppercase; }
+  .done p { margin: 0 0 1rem; color: var(--ink-soft); font-size: 0.95rem; }
+</style>
+</head>
+<body>
+<main>
+  <header class="masthead">
+    <p class="eyebrow"><span data-copy="event">Campuskaart, Hoboken</span>
+      <button class="lang" type="button" id="lang">EN</button></p>
+    <h1 data-copy="title">Hoe was elk gebouw?</h1>
+  </header>
+
+  <p class="lede" data-copy="lede">Tik een gebouw aan en kies een token: top, oké of matig. Anoniem, per gebouw één antwoord.</p>
+
+  <p class="progress" aria-live="polite"><span id="ptokens"></span><span id="pcount"></span></p>
+
+  <div class="sheet">
+    <p class="sheet-label">Campus Hoboken · Salesianenlaan 90</p>
+    <div class="map" role="group" aria-label="Campusgebouwen">
+      <button class="block" type="button" data-building="B" aria-pressed="false">
+        <strong>B</strong><span data-copy="bB">FabLab</span><span class="stamp" aria-hidden="true">&check;</span>
+      </button>
+      <button class="block" type="button" data-building="D" aria-pressed="false">
+        <strong>D</strong><span data-copy="bD">Labo's</span><span class="stamp" aria-hidden="true">&check;</span>
+      </button>
+      <div class="street" aria-hidden="true">
+        <span class="lane"></span><span class="name">Salesianenlaan</span>
+      </div>
+      <button class="block" type="button" data-building="A" aria-pressed="false">
+        <strong>A</strong><span data-copy="bA">Hoofdgebouw &middot; kantine</span><span class="stamp" aria-hidden="true">&check;</span>
+      </button>
+    </div>
+  </div>
+
+  <section class="rater" id="rater" hidden aria-live="polite">
+    <h2 id="ratertitle"></h2>
+    <div class="rates" id="rates"></div>
+    <p class="rated" id="ratedline" hidden></p>
+  </section>
+
+  <section class="done" id="alldone" hidden aria-live="polite">
+    <h2 data-copy="donetitle">Alle drie gehad</h2>
+    <p data-copy="donebody">Bedankt! Nog één minuut: vertel hoe je hele dag was.</p>
+    <a class="button" href="survey.html" data-copy="tosurvey">Naar de vier vragen</a>
+  </section>
+
+  <p class="notice" data-copy="notice">We bewaren alleen je antwoorden, geen persoonsgegevens en geen cookies.</p>
+</main>
+
+<footer class="site">
+  <a href="index.html" data-copy="back">Terug naar het overzicht</a>
+</footer>
+
+<script src="shared.js"></script>
+<script>
+  const BUILDINGS = ["A", "B", "D"];
+  const RATINGS = ["great", "ok", "meh"];
+  const STORE_KEY = "pulse-campus";
+
+  const COPY = {
+    nl: {
+      event: "Campuskaart, Hoboken", title: "Hoe was elk gebouw?",
+      lede: "Tik een gebouw aan en kies een token: top, oké of matig. Anoniem, per gebouw één antwoord.",
+      bA: "Hoofdgebouw · kantine", bB: "FabLab", bD: "Labo's",
+      names: { A: "Gebouw A · hoofdgebouw", B: "Gebouw B · FabLab", D: "Gebouw D · labo's" },
+      labels: { great: "Top", ok: "Oké", meh: "Matig" },
+      count: (n) => `${n}/3 gebouwen beoordeeld`,
+      ratedline: (label) => `Genoteerd: ${label}. Bedankt!`,
+      donetitle: "Alle drie gehad", donebody: "Bedankt! Nog één minuut: vertel hoe je hele dag was.",
+      tosurvey: "Naar de vier vragen",
+      notice: "We bewaren alleen je antwoorden, geen persoonsgegevens en geen cookies.",
+      back: "Terug naar het overzicht",
+    },
+    en: {
+      event: "Campus map, Hoboken", title: "How was each building?",
+      lede: "Tap a building and pick a token: great, ok or meh. Anonymous, one answer per building.",
+      bA: "Main building · canteen", bB: "FabLab", bD: "Labs",
+      names: { A: "Building A · main building", B: "Building B · FabLab", D: "Building D · labs" },
+      labels: { great: "Great", ok: "OK", meh: "Meh" },
+      count: (n) => `${n}/3 buildings rated`,
+      ratedline: (label) => `Noted: ${label}. Thanks!`,
+      donetitle: "All three done", donebody: "Thanks! One more minute: tell us how your whole day was.",
+      tosurvey: "To the four questions",
+      notice: "We keep your answers only, no personal data and no cookies.",
+      back: "Back to the overview",
+    },
+  };
+
+  let selected = null;
+
+  const readRatings = () => {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; }
+  };
+
+  function render() {
+    const copy = COPY[PULSE.language];
+    PULSE.applyCopy(COPY);
+    const ratings = readRatings();
+    const ratedCount = BUILDINGS.filter((b) => ratings[b]).length;
+
+    document.getElementById("ptokens").innerHTML = BUILDINGS
+      .map((b) => `<span class="token${ratings[b] ? " filled" : ""}"></span>`).join(" ");
+    document.getElementById("pcount").textContent = copy.count(ratedCount);
+
+    document.querySelectorAll(".block").forEach((block) => {
+      const building = block.dataset.building;
+      block.setAttribute("aria-pressed", ratings[building] ? "true" : "false");
+      block.classList.toggle("selected", building === selected);
+    });
+
+    const rater = document.getElementById("rater");
+    const ratedLine = document.getElementById("ratedline");
+    const rates = document.getElementById("rates");
+    if (selected) {
+      rater.hidden = false;
+      document.getElementById("ratertitle").textContent = copy.names[selected];
+      if (ratings[selected]) {
+        rates.innerHTML = "";
+        ratedLine.hidden = false;
+        ratedLine.textContent = copy.ratedline(copy.labels[ratings[selected]]);
+      } else {
+        ratedLine.hidden = true;
+        rates.innerHTML = RATINGS.map((r) =>
+          `<button class="rate" type="button" data-rating="${r}">
+             <span class="token" aria-hidden="true"></span>${copy.labels[r]}</button>`).join("");
+      }
+    } else {
+      rater.hidden = true;
+    }
+
+    document.getElementById("alldone").hidden = ratedCount < BUILDINGS.length;
+  }
+
+  document.querySelector(".map").addEventListener("click", (event) => {
+    const block = event.target.closest(".block");
+    if (!block) return;
+    selected = block.dataset.building;
+    render();
+    document.getElementById("rater").scrollIntoView({ block: "nearest", behavior: "smooth" });
+  });
+
+  document.getElementById("rates").addEventListener("click", async (event) => {
+    const button = event.target.closest(".rate");
+    if (!button || !selected) return;
+    const ratings = readRatings();
+    if (ratings[selected]) return;
+    ratings[selected] = button.dataset.rating;
+    localStorage.setItem(STORE_KEY, JSON.stringify(ratings));
+    render();
+    await PULSE.sendOrQueue({
+      type: "campus",
+      submittedAt: new Date().toISOString(),
+      building: selected,
+      rating: button.dataset.rating,
+      language: PULSE.language,
+    });
+  });
+
+  document.getElementById("lang").addEventListener("click", () => {
+    PULSE.toggleLanguage();
+    render();
+  });
+
+  render();
+  PULSE.flushQueue();
+</script>
+</body>
+</html>
