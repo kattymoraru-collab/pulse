@@ -24,11 +24,16 @@ const PULSE = {
   },
 
   NAV: [
-    { href: "index.html", key: "home", nl: "Start", en: "Home" },
-    { href: "campus.html", key: "map", nl: "Kaart", en: "Map" },
-    { href: "quiz.html", key: "quiz", nl: "Quiz", en: "Quiz" },
-    { href: "leaderboard.html", key: "board", nl: "Scores", en: "Scores" },
-    { href: "survey.html", key: "survey", nl: "Vragen", en: "Survey" },
+    { href: "index.html", key: "home", nl: "Start", en: "Home",
+      icon: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/>' },
+    { href: "campus.html", key: "map", nl: "Kaart", en: "Map",
+      icon: '<path d="M12 21c-4.5-4-7-7.6-7-11a7 7 0 0 1 14 0c0 3.4-2.5 7-7 11z"/><circle cx="12" cy="10" r="2.5"/>' },
+    { href: "quiz.html", key: "quiz", nl: "Quiz", en: "Quiz",
+      icon: '<path d="M13 3 5 14h5.5L11 21l8-11h-5.5L13 3z"/>' },
+    { href: "leaderboard.html", key: "board", nl: "Scores", en: "Scores",
+      icon: '<path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 5H5v2a3 3 0 0 0 3 3"/><path d="M16 5h3v2a3 3 0 0 1-3 3"/><path d="M12 13v4"/><path d="M8.5 20h7"/>' },
+    { href: "survey.html", key: "survey", nl: "Vragen", en: "Survey",
+      icon: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="m8.5 12 2.5 2.5 4.5-5"/>' },
   ],
 
   // Correctness always dominates: a correct answer is worth 100 points and the
@@ -53,7 +58,10 @@ const PULSE = {
     const bar = document.querySelector(".tabbar");
     if (!bar) return;
     bar.innerHTML = this.NAV.map((item) =>
-      `<a href="${item.href}"${item.key === this.activeTab ? ' aria-current="page"' : ""}>${item[this.language]}</a>`
+      `<a href="${item.href}"${item.key === this.activeTab ? ' aria-current="page"' : ""}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${item.icon}</svg>
+        ${item[this.language]}</a>`
     ).join("");
   },
 
