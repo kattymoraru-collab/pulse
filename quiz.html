@@ -41,6 +41,7 @@
   .result { text-align: center; padding: 1rem 0; }
   .result .score { font-family: var(--mono); font-size: clamp(3rem, 18vw, 4.5rem); font-weight: 700; }
   .result .score small { font-size: 0.35em; color: var(--ink-soft); }
+  .result .pts { font-family: var(--mono); color: var(--green-deep); font-weight: 700; margin: 0 0 0.5rem; }
 
   .alias { display: grid; gap: 0.6rem; margin: 1.2rem 0; }
   .alias input {
@@ -79,6 +80,7 @@
 
   <section class="result" aria-live="polite">
     <p class="score"><span id="score">0</span><small id="total">/8</small></p>
+    <p class="pts" id="points"></p>
     <p id="resultline" class="lede"></p>
     <form class="alias" id="aliasform">
       <input id="alias" maxlength="16" autocomplete="off" spellcheck="false" placeholder="SPELERSNAAM">
@@ -145,6 +147,7 @@
       right: "Juist!", wrong: "Mis, het juiste antwoord is aangeduid.",
       resultgood: "Sterk! Jij hebt goed opgelet in het FabLab.",
       resultok: "Netjes. Volgende ronde pak je ze allemaal.",
+      pts: "punten",
       sent: "Je staat op het scorebord.",
       aliasplaceholder: "SPELERSNAAM",
     },
@@ -157,6 +160,7 @@
       right: "Correct!", wrong: "Missed, the right answer is marked.",
       resultgood: "Strong! You paid attention in the FabLab.",
       resultok: "Not bad. Next round you get them all.",
+      pts: "points",
       sent: "You are on the scoreboard.",
       aliasplaceholder: "PLAYER NAME",
     },
@@ -165,6 +169,7 @@
   let index = 0;
   let score = 0;
   let startedAt = null;
+  let durationSec = 0;
   let posted = false;
   let order = [];
 
@@ -230,9 +235,12 @@
 
   function finish() {
     const copy = COPY[PULSE.language];
+    durationSec = Math.round((Date.now() - startedAt) / 1000);
     document.body.dataset.stage = "result";
     document.getElementById("score").textContent = String(score);
     document.getElementById("total").textContent = `/${QUESTIONS.length}`;
+    document.getElementById("points").textContent =
+      `${PULSE.quizPoints(score, durationSec)} ${copy.pts} · ${Math.round((score / QUESTIONS.length) * 100)}%`;
     document.getElementById("resultline").textContent = score >= 6 ? copy.resultgood : copy.resultok;
   }
 
@@ -261,7 +269,7 @@
       alias,
       score,
       total: QUESTIONS.length,
-      durationSec: Math.round((Date.now() - startedAt) / 1000),
+      durationSec,
       language: PULSE.language,
     });
     document.getElementById("aliasform").innerHTML =

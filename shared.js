@@ -27,8 +27,17 @@ const PULSE = {
     { href: "index.html", key: "home", nl: "Start", en: "Home" },
     { href: "campus.html", key: "map", nl: "Kaart", en: "Map" },
     { href: "quiz.html", key: "quiz", nl: "Quiz", en: "Quiz" },
+    { href: "leaderboard.html", key: "board", nl: "Scores", en: "Scores" },
     { href: "survey.html", key: "survey", nl: "Vragen", en: "Survey" },
   ],
+
+  // Correctness always dominates: a correct answer is worth 100 points and the
+  // speed bonus never exceeds 99, so speed only separates players with the same
+  // number right. The bonus fades linearly to zero over ten minutes.
+  quizPoints(score, durationSec) {
+    const speed = Math.max(0, 1 - durationSec / 600);
+    return score * 100 + Math.round(99 * speed);
+  },
 
   nav(active) {
     this.activeTab = active;

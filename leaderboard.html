@@ -78,14 +78,16 @@
     try {
       const response = await fetch(`${PULSE.ENDPOINT}?view=leaderboard`);
       const data = await response.json();
-      const scores = data.scores || [];
+      const scores = (data.scores || [])
+        .map((entry) => ({ ...entry, points: PULSE.quizPoints(entry.score, entry.durationSec) }))
+        .sort((a, b) => b.points - a.points || a.durationSec - b.durationSec);
       empty.hidden = scores.length > 0;
       board.innerHTML = scores
         .map((entry, i) => `
           <li>
             <span class="rank">${i + 1}</span>
             <span class="alias">${escapeHtml(entry.alias)}</span>
-            <span class="points">${entry.score}<small>/${entry.total}</small></span>
+            <span class="points">${entry.points}<small> · ${entry.score}/${entry.total} · ${entry.durationSec}s</small></span>
           </li>`)
         .join("");
       document.getElementById("updated").textContent = COPY[PULSE.language].updated;
@@ -106,6 +108,7 @@
     refresh();
   });
 
+  PULSE.nav("board");
   PULSE.applyCopy(COPY);
   refresh();
   setInterval(refresh, 15000);
