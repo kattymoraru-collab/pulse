@@ -84,7 +84,7 @@
       <input id="alias" maxlength="16" autocomplete="off" spellcheck="false" placeholder="SPELERSNAAM">
       <button class="button" type="submit" data-copy="submitscore">Zet me op het scorebord</button>
     </form>
-    <a class="button quiet" href="survey.html" data-copy="tosurvey">Nog 1 minuut: hoe was je dag?</a>
+    <a class="button" href="survey.html" data-copy="tosurvey">Nog 1 minuut: hoe was je dag?</a>
     <p class="notice"><a href="leaderboard.html" data-copy="toboard">Bekijk het scorebord</a></p>
   </section>
 </main>
@@ -279,6 +279,7 @@
     render();
   });
 
+  PULSE.nav("quiz");
   render();
   PULSE.flushQueue();
 </script>

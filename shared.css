@@ -81,4 +81,23 @@ footer.site {
   border-top: 1px solid var(--line); padding-top: 1rem;
 }
 
+.tabbar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
+  display: flex; background: var(--paper);
+  border-top: 2px solid var(--green-deep);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tabbar a {
+  flex: 1; display: flex; align-items: center; justify-content: center; min-height: 52px;
+  text-decoration: none; color: var(--ink-soft); font-size: 0.75rem; font-weight: 700;
+  letter-spacing: 0.09em; text-transform: uppercase;
+  border-top: 3px solid transparent; margin-top: -2px;
+}
+
+.tabbar a[aria-current="page"] { color: var(--green-deep); border-top-color: var(--green-deep); }
+
+body.has-tabbar main { padding-bottom: 6.5rem; }
+body.has-tabbar footer.site { padding-bottom: 5.5rem; }
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

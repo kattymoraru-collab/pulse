@@ -20,6 +20,32 @@ const PULSE = {
     });
     const toggle = document.getElementById("lang");
     if (toggle) toggle.textContent = this.language === "nl" ? "EN" : "NL";
+    this.renderNav();
+  },
+
+  NAV: [
+    { href: "index.html", key: "home", nl: "Start", en: "Home" },
+    { href: "campus.html", key: "map", nl: "Kaart", en: "Map" },
+    { href: "quiz.html", key: "quiz", nl: "Quiz", en: "Quiz" },
+    { href: "survey.html", key: "survey", nl: "Vragen", en: "Survey" },
+  ],
+
+  nav(active) {
+    this.activeTab = active;
+    document.body.classList.add("has-tabbar");
+    const bar = document.createElement("nav");
+    bar.className = "tabbar";
+    bar.setAttribute("aria-label", "Site");
+    document.body.append(bar);
+    this.renderNav();
+  },
+
+  renderNav() {
+    const bar = document.querySelector(".tabbar");
+    if (!bar) return;
+    bar.innerHTML = this.NAV.map((item) =>
+      `<a href="${item.href}"${item.key === this.activeTab ? ' aria-current="page"' : ""}>${item[this.language]}</a>`
+    ).join("");
   },
 
   async post(payload) {

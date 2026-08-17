@@ -122,6 +122,7 @@
   <section class="done" id="done" aria-live="polite">
     <h2 data-copy="thanks">Bedankt</h2>
     <p data-copy="thanksbody">Je antwoord telt mee voor de volgende Open Campus Dag.</p>
+    <a class="button" href="campus.html" data-copy="tomap">Beoordeel ook de gebouwen</a>
     <p><a href="index.html" data-copy="back">Terug naar het overzicht</a></p>
   </section>
 </main>
@@ -150,6 +151,7 @@
       q4: "4. Wat zou je veranderen?", q4hint: "Optioneel, één zin is genoeg.",
       send: "Versturen", notice: "We bewaren alleen je antwoorden, geen persoonsgegevens en geen cookies.",
       thanks: "Bedankt", thanksbody: "Je antwoord telt mee voor de volgende Open Campus Dag.",
+      tomap: "Beoordeel ook de gebouwen",
       back: "Terug naar het overzicht",
       choose: "Kies een opleiding", failed: "Versturen lukte niet. Probeer opnieuw.",
     },
@@ -162,6 +164,7 @@
       q4: "4. What would you change?", q4hint: "Optional, one sentence is enough.",
       send: "Send", notice: "We keep your answers only, no personal data and no cookies.",
       thanks: "Thank you", thanksbody: "Your answer counts towards the next Open Campus Day.",
+      tomap: "Also rate the buildings",
       back: "Back to the overview",
       choose: "Choose a programme", failed: "Sending failed. Try again.",
     },
@@ -225,6 +228,7 @@
     send.disabled = false;
   });
 
+  PULSE.nav("survey");
   render();
   PULSE.flushQueue();
 </script>
