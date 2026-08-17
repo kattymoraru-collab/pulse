@@ -100,4 +100,26 @@ footer.site {
 body.has-tabbar main { padding-bottom: 6.5rem; }
 body.has-tabbar footer.site { padding-bottom: 5.5rem; }
 
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  ::view-transition-old(root) { animation-duration: 120ms; }
+  ::view-transition-new(root) { animation-duration: 180ms; }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+    to { opacity: 1; transform: none; filter: none; }
+  }
+
+  main > * { animation: rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+  main > *:nth-child(2) { animation-delay: 50ms; }
+  main > *:nth-child(3) { animation-delay: 100ms; }
+  main > *:nth-child(4) { animation-delay: 150ms; }
+  main > *:nth-child(5) { animation-delay: 200ms; }
+  main > *:nth-child(6) { animation-delay: 250ms; }
+
+  .button, .chute-card { transition: transform 120ms ease; }
+  .button:active, .chute-card:active { transform: scale(0.98); }
+  .tabbar a { transition: color 160ms ease, border-color 160ms ease; }
+}
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

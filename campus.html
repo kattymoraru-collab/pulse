@@ -64,6 +64,20 @@
   .done[hidden] { display: none; }
   .done h2 { margin: 0 0 0.5rem; font-size: 1.2rem; text-transform: uppercase; }
   .done p { margin: 0 0 1rem; color: var(--ink-soft); font-size: 0.95rem; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes stamp {
+      0% { transform: scale(0); }
+      70% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+    .block[aria-pressed="true"] .stamp { animation: stamp 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+    .progress .token { transition: background 200ms ease, border-color 200ms ease; }
+    .progress .token.filled { animation: stamp 320ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .block { transition: transform 120ms ease, background 200ms ease, border-color 200ms ease; }
+    .block:active, .rate:active { transform: scale(0.98); }
+    .rate { transition: transform 120ms ease; }
+  }
 </style>
 </head>
 <body>
@@ -162,8 +176,12 @@
     const ratings = readRatings();
     const ratedCount = BUILDINGS.filter((b) => ratings[b]).length;
 
-    document.getElementById("ptokens").innerHTML = BUILDINGS
-      .map((b) => `<span class="token${ratings[b] ? " filled" : ""}"></span>`).join(" ");
+    const ptokens = document.getElementById("ptokens");
+    if (!ptokens.childElementCount) {
+      ptokens.innerHTML = BUILDINGS.map(() => `<span class="token"></span>`).join(" ");
+    }
+    BUILDINGS.forEach((building, index) =>
+      ptokens.children[index].classList.toggle("filled", Boolean(ratings[building])));
     document.getElementById("pcount").textContent = copy.count(ratedCount);
 
     document.querySelectorAll(".block").forEach((block) => {
